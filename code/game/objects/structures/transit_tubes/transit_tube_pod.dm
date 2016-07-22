@@ -6,6 +6,7 @@
 	density = 1
 	var/moving = 0
 	var/datum/gas_mixture/air_contents = new()
+	var/atom/moving_from_loc
 
 
 /obj/structure/transit_tube_pod/New(loc)
@@ -25,6 +26,18 @@
 		AM.loc = loc
 
 	return ..()
+
+// /atom/movable/Move splits diagonal movement, but whether the movement
+//  direction is diagonal can actually matter to some tubes, so the source
+//  loc is preserved here.
+/obj/structure/transit_tube_pod/Move(atom/newloc, direct)
+	if(!moving_from_loc)
+		moving_from_loc = loc
+		. = ..(newloc, direct)
+		moving_from_loc = null
+	else
+		. = ..(newloc, direct)
+
 
 /obj/structure/transit_tube_pod/attackby(obj/item/I, mob/user, params)
 	if(istype(I, /obj/item/weapon/crowbar))

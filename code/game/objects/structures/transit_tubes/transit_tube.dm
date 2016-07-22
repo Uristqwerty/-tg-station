@@ -12,6 +12,7 @@
 	var/list/tube_dirs = null
 	var/exit_delay = 1
 	var/enter_delay = 0
+	var/accept_drifting_pods = 0
 
 	// alldirs in global.dm is the same list of directions, but since
 	//  the specific order matters to get a usable icon_state, it is
@@ -37,6 +38,20 @@ obj/structure/transit_tube/ex_act(severity, target)
 
 	if(tube_dirs == null)
 		init_dirs()
+
+/obj/structure/transit_tube/Bumped(mob/AM as mob|obj)
+	if(accept_drifting_pods && istype(AM, /obj/structure/transit_tube_pod))
+		var/obj/structure/transit_tube_pod/pod = AM
+		var/direction = get_dir(pod.moving_from_loc, src)
+		if(!pod.moving && direction != turn(tube_dirs[1], 180) && src.has_entrance(direction))
+			var/prev_loc = pod.loc
+			spawn(enter_delay(pod, direction))
+				if(pod.loc == prev_loc)
+					pod.loc = src.loc
+					pod.setDir(tube_dirs[1])
+					pod.follow_tube()
+			return
+	. = ..(AM)
 
 /obj/structure/transit_tube/attackby(obj/item/W, mob/user, params)
 	if(istype(W, /obj/item/weapon/wrench))
@@ -160,6 +175,9 @@ obj/structure/transit_tube/ex_act(severity, target)
 		if(copytext(icon_state, 1, 3) == "D-" || findtextEx(icon_state, "Pass"))
 			density = 0
 
+		if(findtextEx(icon_state, "Funnel"))
+			accept_drifting_pods = 1
+
 
 
 
@@ -275,11 +293,19 @@ obj/structure/transit_tube/ex_act(severity, target)
 
 	var/list/directions = list()
 
-	for(var/text_part in split_text)
-		var/direction = text2dir_extended(text_part)
+	if(split_text[1] == "Funnel")
+		var/direction = text2dir_extended(split_text[2])
+		directions += direction
+		directions += turn(direction, 135)
+		directions += turn(direction, 180)
+		directions += turn(direction, 225)
 
-		if(direction > 0)
-			directions += direction
+	else
+		for(var/text_part in split_text)
+			var/direction = text2dir_extended(text_part)
+
+			if(direction > 0)
+				directions += direction
 
 	direction_table[text] = directions
 	return directions

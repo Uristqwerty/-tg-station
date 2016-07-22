@@ -13,6 +13,16 @@
 	..()
 	user << "<span class='notice'>Alt-click to rotate it clockwise.</span>"
 
+
+var/list/transit_tube_rotate_groups = list(
+	list("N-S", "NE-SW", "E-W", "NW-SE"),
+	list("N-S-Pass", "E-W-Pass"),
+	list("N-SW", "W-NE", "E-NW", "N-SE", "S-NE", "E-SW", "W-SE", "S-NW"),
+	list("N-SE-SW", "E-SW-NW", "S-NW-NE", "W-NE-SE"),
+	list("N-SW-SE", "E-NW-SW", "S-NE-NW", "W-SE-NE"),
+	list("Funnel-N", "Funnel-E", "Funnel-S", "Funnel-W")
+)
+
 //wrapper for turn that changes the transit tube formatted icon_state instead of the dir
 /obj/structure/c_transit_tube/proc/tube_turn(angle)
 	var/list/badtubes = list("W-E", "W-E-Pass", "S-N", "S-N-Pass", "SW-NE", "SE-NW")
